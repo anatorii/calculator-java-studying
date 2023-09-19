@@ -3,13 +3,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class Calculator extends JFrame {
-    private static int width = 800;
+    private static int width = 400;
     private static int height = 600;
     private JTextField field;
     private int operandNumber = 1;
     private String action = "";
-    private Double first = null;
-    private Double second = null;
+    private String first = "";
+    private String second = "";
 
     public Calculator() {
         super("Calculator");
@@ -25,7 +25,9 @@ public class Calculator extends JFrame {
 
         field = new JTextField();
         field.setFont(new Font("Arial", Font.PLAIN, 20));
+        field.setText("");
         field.setColumns(20);
+        field.setFocusable(false);
 
         JButton b1 = new JButton("1");
         JButton b2 = new JButton("2");
@@ -97,9 +99,23 @@ public class Calculator extends JFrame {
         b0.addActionListener(new NumberActionListener(this));
 
         bDiv.addActionListener(new ActionActionListener(this));
-        bDiv.addActionListener(new ActionActionListener(this));
-        bDiv.addActionListener(new ActionActionListener(this));
-        bDiv.addActionListener(new ActionActionListener(this));
+        bPlus.addActionListener(new ActionActionListener(this));
+        bMinus.addActionListener(new ActionActionListener(this));
+        bMult.addActionListener(new ActionActionListener(this));
+
+        bClear.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearActionPerformed(e);
+            }
+        });
+
+        bEqual.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                equalActionPerformed(e);
+            }
+        });
     }
 
     public JTextField getField() {
@@ -108,10 +124,10 @@ public class Calculator extends JFrame {
     public String getAction() {
         return this.action;
     }
-    public Double getFirst() {
+    public String getFirst() {
         return this.first;
     }
-    public Double getSecond() {
+    public String getSecond() {
         return this.second;
     }
     public int getOperandNumber() {
@@ -123,17 +139,46 @@ public class Calculator extends JFrame {
     public void setOperandNumber(int number) {
         this.operandNumber = number;
     }
-    public void setFirst(double op) {
+    public void setFirst(String op) {
         this.first = op;
     }
-    public void setSecond(double op) {
+    public void setSecond(String op) {
         this.second = op;
     }
+
     public void refreshField() {
-        String first = this.first != null ? String.valueOf(this.first) : "";
-        String second = this.second != null ? String.valueOf(this.second) : "";
+        String first = this.first;
+        String second = this.second;
         String op = " " + this.action + " ";
-        this.getField().setText(first + op + second);
+        this.field.setText(first + op + second);
+    }
+
+    public void equalActionPerformed(ActionEvent e) {
+        if (first == "" || second == "") {
+            return;
+        }
+        double f = Double.parseDouble(this.first);
+        double s = Double.parseDouble(this.second);
+        double result = 0;
+        switch (action) {
+            case "+": result = f + s; break;
+            case "-": result = f - s; break;
+            case "/": result = f / s; break;
+            case "*": result = f * s; break;
+        }
+        field.setText(String.valueOf(result));
+        action = "";
+        first = "";
+        second = "";
+        operandNumber = 1;
+    }
+
+    public void clearActionPerformed(ActionEvent e) {
+        field.setText("");
+        action = "";
+        first = "";
+        second = "";
+        operandNumber = 1;
     }
 
     public static void main(String[] args) {
@@ -144,6 +189,8 @@ public class Calculator extends JFrame {
             }
         });
     }
+
+
 }
 
 class ActionActionListener extends AbstractAction {
@@ -155,8 +202,16 @@ class ActionActionListener extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        frame.setAction(((JButton) e.getSource()).getText());
+        String action = ((JButton) e.getSource()).getText();
+        if (frame.getFirst() == "") {
+            return;
+        }
+        if (frame.getSecond() != "" && frame.getOperandNumber() == 2) {
+            return;
+        }
+        frame.setAction(action);
         frame.refreshField();
+        frame.setOperandNumber(2);
     }
 }
 
@@ -171,15 +226,12 @@ class NumberActionListener extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         String digit = ((JButton) e.getSource()).getText();
         if (frame.getOperandNumber() == 1) {
-            String f = frame.getFirst() == null ? "" : String.valueOf(frame.getFirst());
-            frame.setFirst(Double.parseDouble(f + digit));
+            String f = frame.getFirst();
+            frame.setFirst(f + digit);
         } else {
-            String f = frame.getSecond() == null ? "" : String.valueOf(frame.getSecond());
-            frame.setSecond(Double.parseDouble(String.valueOf(frame.getSecond()) + digit));
+            String f = frame.getSecond();
+            frame.setSecond(f + digit);
         }
         frame.refreshField();
-
-        System.out.println(frame.getField().getText());
-        System.out.println(((JButton) e.getSource()).getText());
     }
 }
